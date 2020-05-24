@@ -28,6 +28,7 @@ class UsersRepository{
     const records = await this.getAll(); //get the latest register
     records.push(attrs);
     await this.writeAll(records);
+    return attrs;
 
   }
 
