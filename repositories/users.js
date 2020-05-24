@@ -81,14 +81,4 @@ class UsersRepository{
   }
 }
 
-const test = async () => {
-  const repo = new UsersRepository('users.json');
-  //await repo.deleteElement('f0a82f17');
-  //await repo.createElement({ email: 'test@gmail.com'});
-  //await repo.updateElement('38f4ebs5d', {password: 'pwd1'});
-  const user = await repo.getOneBy({email: 'test1@test.com', id: '1d346d10'});
-  console.log(user);
-
-};
-
-test()
+module.exports = new UsersRepository('users.json');
