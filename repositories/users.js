@@ -23,7 +23,7 @@ class UsersRepository{
     );
   }
 
-  async create(attrs){ //pass the new user atributes
+  async createElement(attrs){ //pass the new user atributes
     attrs.id = this.randomId();
     const records = await this.getAll(); //get the latest register
     records.push(attrs);
@@ -47,17 +47,29 @@ class UsersRepository{
     return records.find(record => record.id === id);
   }
 
-  async delete(id){
+  async deleteElement(id){
     const records = await this.getAll();
     const filteredRecords = records.filter(record => record.id !== id);
     await this.writeAll(filteredRecords);
+  }
+
+  async updateElement(id, attrs){
+    const records = await this.getAll();
+    const record = records.find(record => record.id === id);
+
+    if(!record){
+      throw new Error(`Error: id ${id} not found`);
+    }
+    Object.assign(record, attrs); //take the attr and copy into record
+    await this.writeAll(records);
   }
 }
 
 const test = async () => {
   const repo = new UsersRepository('users.json');
-  await repo.delete('f0a82f17');
-  //console.log(user);
+  //await repo.deleteElement('f0a82f17');
+  //await repo.createElement({ email: 'test@gmail.com'});
+  await repo.updateElement('38f4eb5d', {password: 'pwd1'});
 };
 
 test()
