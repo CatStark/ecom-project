@@ -25,7 +25,15 @@ class UsersRepository{
   async create(attrs){ //pass the new user atributes
     const records = await this.getAll(); //get the latest register
     records.push(attrs);
-    await fs.promises.writeFile(this.filename, JSON.stringify(records));
+    await this.writeAll(records);
+
+  }
+
+  async writeAll(records){
+    await fs.promises.writeFile(
+      this.filename,
+      JSON.stringify(records, null, 2)
+    );
   }
 }
 
