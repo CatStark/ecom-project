@@ -5,6 +5,7 @@ const { check, validationResult } = require('express-validator');
 const usersRepo = require('../../repositories/users');
 const signupTemplate = require('../../views/admin/auth/signup');
 const signinTemplate = require('../../views/admin/auth/signin');
+const {requireEmail, requirePassword, requirePasswordConfirmation} =  require('./validators');
 
 const router = express.Router();
 
@@ -13,36 +14,19 @@ router.get('/signup', (req, res) => {
 });
 
 router.post('/signup', [
-  check('email')
-    .trim()
-    .normalizeEmail()
-    .isEmail()
-    .withMessage('Must be a valid email')
-    .custom(async (email) => {
-      const existingUser = await usersRepo.getOneBy({ email }); //if this email already exists
-      if (existingUser){
-        throw new Error('Email already in use');
-      }
-    }),
-  check('password')
-    .trim()
-    .isLength({min: 4, max: 20})
-    .withMessage('Must be between 4 and 20 characters'),
-  check('passwordConfirmation')
-    .trim()
-    .isLength({min: 4, max: 20})
-    .withMessage('Must be between 4 and 20 characters')
-    .custom((passwordConfirmation, { req }) => {
-      if(passwordConfirmation !== req.body.password){
-        throw new Error('Passwords must match');
-      }
-    })
+  requireEmail,
+  requirePassword,
+  requirePasswordConfirmation
   ],
   async (req, res) => {
   const errors = validationResult(req);
-  console.log(errors);
-  const {email, password, passwordConfirmation } = req.body;
 
+  if(!errors.isEmpty()){
+    return res.send(signupTemplate({ req, errors}));
+  }
+
+
+  const {email, password, passwordConfirmation } = req.body;
 
   //Create user in user repo
   const user = await usersRepo.createElement({email: email, password: password});
