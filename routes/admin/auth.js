@@ -5,7 +5,7 @@ const { check, validationResult } = require('express-validator');
 const usersRepo = require('../../repositories/users');
 const signupTemplate = require('../../views/admin/auth/signup');
 const signinTemplate = require('../../views/admin/auth/signin');
-const {requireEmail, requirePassword, requirePasswordConfirmation} =  require('./validators');
+const {requireEmail, requirePassword, requirePasswordConfirmation, requireEmailExists, requireValidPassword} =  require('./validators');
 
 const router = express.Router();
 
@@ -22,9 +22,12 @@ router.post('/signup', [
   const errors = validationResult(req);
 
   if(!errors.isEmpty()){
+    console.log('Errors occured');
+    console.log(errors);
     return res.send(signupTemplate({ req, errors}));
   }
-
+  else
+    console.log('No errors occured');
 
   const {email, password, passwordConfirmation } = req.body;
 
@@ -36,26 +39,36 @@ router.post('/signup', [
 });
 
 router.get('/signin', (req, res) => {
-  res.send(signinTemplate({ req }));
+  res.send(signinTemplate({  }));
 });
 
-router.post('/signin', async (req, res) => {
-  const {email, password} = req.body; //this is the data the user just wrote
-  const existingUser = await usersRepo.getOneBy({ email });
+router.post('/signin',
+  [
+    requireEmailExists,
+    requireValidPassword
+  ],
+  async (req, res) => {
+  const errors = validationResult(req);
 
-  if(!existingUser)
-    return res.send('User doesnt exist!');
+  if(!errors.isEmpty()){
+    console.log('Errors occured');
+    console.log(errors);
+    return res.send(signinTemplate({ errors }));
+  }
+  else {
+    console.log('No errors occured');
+  }
+  const {email} = req.body; //this is the data the user just wrote
 
-  const validPwd = await usersRepo.comparePasswords(
-    existingUser.password,
-    password
-  );
+  const user = await usersRepo.getOneBy({ email });
+  if(!user)
+    throw new Error('Something went wrong! :()');
+  else {
+    req.session.userId = user.id;
+    res.send('You are signed in!');
+  }
 
-  if(!validPwd)
-    return res.send('Wrong password!');
 
-  req.session.userId = existingUser.id;
-  res.send('You are signed in!');
 });
 
 router.get('/signout', (req, res) =>{
