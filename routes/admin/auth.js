@@ -25,7 +25,7 @@ router.post('/signup', [
   const user = await usersRepo.createElement({email: email, password: password});
   req.session.userId = user.id;
 
-  res.send("Account created!");
+  res.redirect('/admin/products');
 });
 
 router.get('/signin', (req, res) => {
@@ -47,7 +47,7 @@ router.post('/signin',
     throw new Error('Something went wrong! :()');
   else {
     req.session.userId = user.id;
-    res.send('You are signed in!');
+    res.redirect('/admin/products');
   }
 
 
