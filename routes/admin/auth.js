@@ -1,7 +1,6 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator');
 
-
+const { handleErrors } = require('./middlewares');
 const usersRepo = require('../../repositories/users');
 const signupTemplate = require('../../views/admin/auth/signup');
 const signinTemplate = require('../../views/admin/auth/signin');
@@ -18,18 +17,9 @@ router.post('/signup', [
   requirePassword,
   requirePasswordConfirmation
   ],
+  handleErrors(signupTemplate),
   async (req, res) => {
-  const errors = validationResult(req);
-
-  if(!errors.isEmpty()){
-    console.log('Errors occured');
-    console.log(errors);
-    return res.send(signupTemplate({ req, errors}));
-  }
-  else
-    console.log('No errors occured');
-
-  const {email, password, passwordConfirmation } = req.body;
+  const {email, password } = req.body;
 
   //Create user in user repo
   const user = await usersRepo.createElement({email: email, password: password});
@@ -47,17 +37,9 @@ router.post('/signin',
     requireEmailExists,
     requireValidPassword
   ],
+  handleErrors(signinTemplate),
   async (req, res) => {
-  const errors = validationResult(req);
 
-  if(!errors.isEmpty()){
-    console.log('Errors occured');
-    console.log(errors);
-    return res.send(signinTemplate({ errors }));
-  }
-  else {
-    console.log('No errors occured');
-  }
   const {email} = req.body; //this is the data the user just wrote
 
   const user = await usersRepo.getOneBy({ email });
